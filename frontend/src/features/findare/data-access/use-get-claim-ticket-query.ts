@@ -8,7 +8,7 @@ import type { Address } from 'gill'
 import { FINDARE_PROGRAM_ADDRESS } from '../../../../anchor/src/client/js/generated'
 
 async function getClaimTicketAddress(foundPostAddress: Address, claimerAddress: Address) {
-  return getProgramDerivedAddress({
+  const [address] = await getProgramDerivedAddress({
     programAddress: FINDARE_PROGRAM_ADDRESS,
     seeds: [
       getBytesEncoder().encode(new Uint8Array([99, 108, 97, 105, 109, 45, 116, 105, 99, 107, 101, 116])), // b"claim-ticket"
@@ -16,6 +16,7 @@ async function getClaimTicketAddress(foundPostAddress: Address, claimerAddress: 
       getAddressEncoder().encode(claimerAddress),
     ],
   })
+  return address
 }
 
 export function useGetClaimTicketQuery(
@@ -30,7 +31,7 @@ export function useGetClaimTicketQuery(
     queryFn: async () => {
       if (!client || !foundPostAddress || !claimerAddress) return null
       const claimTicketAddress = await getClaimTicketAddress(foundPostAddress, claimerAddress)
-      return fetchMaybeClaimTicket(client, claimTicketAddress)
+      return fetchMaybeClaimTicket(client.rpc, claimTicketAddress)
     },
     enabled: enabled && !!client && !!foundPostAddress && !!claimerAddress,
   })

@@ -22,7 +22,7 @@ export function FindareFoundFeed() {
       {showCreateModal && (
         <FindareCreateFoundListingModal
           onClose={() => setShowCreateModal(false)}
-          config={configQuery.data}
+          config={configQuery.data ?? undefined}
         />
       )}
 

@@ -18,10 +18,11 @@ const LAMPORTS_PER_SOL = 1_000_000_000n
 const MIN_CLAIM_DEPOSIT_SOL = 0.01
 
 async function getAppConfigAddress() {
-  return getProgramDerivedAddress({
+  const [address] = await getProgramDerivedAddress({
     programAddress: FINDARE_PROGRAM_ADDRESS,
     seeds: [getBytesEncoder().encode(new Uint8Array([99, 111, 110, 102, 105, 103]))], // b"config"
   })
+  return address
 }
 
 export function useClaimFoundListingMutation() {
@@ -47,7 +48,7 @@ export function useClaimFoundListingMutation() {
       const claimDepositLamports = BigInt(Math.floor(args.claimDepositSol * Number(LAMPORTS_PER_SOL)))
       
       const instruction = await getClaimFoundListingInstructionAsync({
-        claimer: account,
+        claimer: signer,
         foundPost: args.foundPostAddress,
         config: configAddress,
         claimNotes: args.claimNotes,

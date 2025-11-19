@@ -14,10 +14,11 @@ import {
 import { UiWalletAccount, useWalletUiSigner } from '@wallet-ui/react'
 
 async function getAppConfigAddress() {
-  return getProgramDerivedAddress({
+  const [address] = await getProgramDerivedAddress({
     programAddress: FINDARE_PROGRAM_ADDRESS,
     seeds: [getBytesEncoder().encode(new Uint8Array([99, 111, 110, 102, 105, 103]))], // b"config"
   })
+  return address
 }
 
 export function useCreateFoundListingMutation() {
@@ -39,7 +40,7 @@ export function useCreateFoundListingMutation() {
       
       const configAddress = await getAppConfigAddress()
       const instruction = await getCreateFoundListingInstructionAsync({
-        finder: account,
+        finder: signer,
         config: configAddress,
         ...args,
       })

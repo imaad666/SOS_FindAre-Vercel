@@ -15,10 +15,11 @@ import type { Address } from 'gill'
 import { UiWalletAccount, useWalletUiSigner } from '@wallet-ui/react'
 
 async function getAppConfigAddress() {
-  return getProgramDerivedAddress({
+  const [address] = await getProgramDerivedAddress({
     programAddress: FINDARE_PROGRAM_ADDRESS,
     seeds: [getBytesEncoder().encode(new Uint8Array([99, 111, 110, 102, 105, 103]))], // b"config"
   })
+  return address
 }
 
 export function useSubmitFoundReportMutation() {
@@ -37,7 +38,7 @@ export function useSubmitFoundReportMutation() {
       
       const configAddress = await getAppConfigAddress()
       const instruction = await getSubmitFoundReportInstructionAsync({
-        finder: account,
+        finder: signer,
         lostPost: args.lostPostAddress,
         config: configAddress,
         evidenceUri: args.evidenceUri,

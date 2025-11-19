@@ -11,13 +11,15 @@ import {
   signAndSendTransactionMessageWithSigners,
   getBase58Decoder
 } from 'gill'
+import type { Address } from 'gill'
 import { UiWalletAccount, useWalletUiSigner } from '@wallet-ui/react'
 
 async function getAppConfigAddress() {
-  return getProgramDerivedAddress({
+  const [address] = await getProgramDerivedAddress({
     programAddress: FINDARE_PROGRAM_ADDRESS,
     seeds: [getBytesEncoder().encode(new Uint8Array([99, 111, 110, 102, 105, 103]))], // b"config"
   })
+  return address
 }
 
 export function useInitializeAppMutation() {
@@ -33,8 +35,8 @@ export function useInitializeAppMutation() {
       
       const configAddress = await getAppConfigAddress()
       const instruction = await getInitializeAppInstructionAsync({
-        payer: account,
-        admin: account.address,
+        payer: signer,
+        admin: account.address as Address,
         config: configAddress,
       })
 

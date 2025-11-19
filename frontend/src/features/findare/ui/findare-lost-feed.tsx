@@ -22,7 +22,7 @@ export function FindareLostFeed() {
       {showCreateModal && (
         <FindareCreateLostPostModal
           onClose={() => setShowCreateModal(false)}
-          config={configQuery.data}
+          config={configQuery.data ?? undefined}
         />
       )}
 

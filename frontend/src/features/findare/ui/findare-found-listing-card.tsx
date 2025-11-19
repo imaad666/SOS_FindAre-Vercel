@@ -68,7 +68,7 @@ export function FindareFoundListingCard({ listing }: { listing: Account<FoundPos
     // Fetch claim ticket to get claimer address
     try {
       const { fetchMaybeClaimTicket } = await import('../../../../anchor/src/client/js/generated')
-      const claimTicket = await fetchMaybeClaimTicket(client!, listing.data.activeClaim as Address)
+      const claimTicket = await fetchMaybeClaimTicket(client!.rpc, listing.data.activeClaim as Address)
       if (!claimTicket?.exists) {
         toast.error('Claim ticket not found')
         return
@@ -92,7 +92,7 @@ export function FindareFoundListingCard({ listing }: { listing: Account<FoundPos
     // Fetch claim ticket to get claimer address
     try {
       const { fetchMaybeClaimTicket } = await import('../../../../anchor/src/client/js/generated')
-      const claimTicket = await fetchMaybeClaimTicket(client!, listing.data.activeClaim as Address)
+      const claimTicket = await fetchMaybeClaimTicket(client!.rpc, listing.data.activeClaim as Address)
       if (!claimTicket?.exists) {
         toast.error('Claim ticket not found')
         return

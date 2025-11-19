@@ -15,14 +15,16 @@ export function useGetFoundListingsQuery() {
     queryFn: async () => {
       if (!client) throw new Error('Client not available')
       const discriminator = getFoundPostDiscriminatorBytes()
+      const discriminatorBase64 = Buffer.from(discriminator).toString('base64')
       
       // Fetch all found post accounts using discriminator filter
-      const accounts = await client.rpc.getProgramAccounts(FINDARE_PROGRAM_ADDRESS, {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const accounts = await (client.rpc.getProgramAccounts as any)(FINDARE_PROGRAM_ADDRESS, {
         filters: [
           {
             memcmp: {
-              offset: 0,
-              bytes: Array.from(discriminator),
+              offset: 0n,
+              bytes: discriminatorBase64,
             },
           },
         ],
@@ -30,9 +32,9 @@ export function useGetFoundListingsQuery() {
       }).send()
 
       const foundPosts = await Promise.all(
-        accounts.value.map(async (account) => {
+        accounts.value.map(async (account: { pubkey: Address }) => {
           try {
-            const post = await fetchMaybeFoundPost(client, account.pubkey as Address)
+            const post = await fetchMaybeFoundPost(client.rpc, account.pubkey as Address)
             return post?.exists ? post : null
           } catch {
             return null

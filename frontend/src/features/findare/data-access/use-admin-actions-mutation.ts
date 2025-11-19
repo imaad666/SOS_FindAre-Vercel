@@ -19,14 +19,15 @@ import type { Address } from 'gill'
 import { UiWalletAccount, useWalletUiSigner } from '@wallet-ui/react'
 
 async function getAppConfigAddress() {
-  return getProgramDerivedAddress({
+  const [address] = await getProgramDerivedAddress({
     programAddress: FINDARE_PROGRAM_ADDRESS,
     seeds: [getBytesEncoder().encode(new Uint8Array([99, 111, 110, 102, 105, 103]))], // b"config"
   })
+  return address
 }
 
 async function getFoundReportAddress(lostPostAddress: Address, finderAddress: Address) {
-  return getProgramDerivedAddress({
+  const [address] = await getProgramDerivedAddress({
     programAddress: FINDARE_PROGRAM_ADDRESS,
     seeds: [
       getBytesEncoder().encode(new Uint8Array([102, 111, 117, 110, 100, 45, 114, 101, 112, 111, 114, 116])), // b"found-report"
@@ -34,10 +35,11 @@ async function getFoundReportAddress(lostPostAddress: Address, finderAddress: Ad
       getAddressEncoder().encode(finderAddress),
     ],
   })
+  return address
 }
 
 async function getClaimTicketAddress(foundPostAddress: Address, claimerAddress: Address) {
-  return getProgramDerivedAddress({
+  const [address] = await getProgramDerivedAddress({
     programAddress: FINDARE_PROGRAM_ADDRESS,
     seeds: [
       getBytesEncoder().encode(new Uint8Array([99, 108, 97, 105, 109, 45, 116, 105, 99, 107, 101, 116])), // b"claim-ticket"
@@ -45,6 +47,7 @@ async function getClaimTicketAddress(foundPostAddress: Address, claimerAddress: 
       getAddressEncoder().encode(claimerAddress),
     ],
   })
+  return address
 }
 
 export function useApproveFoundReportMutation() {
@@ -65,7 +68,7 @@ export function useApproveFoundReportMutation() {
       const foundReportAddress = await getFoundReportAddress(args.lostPostAddress, args.finderAddress)
       
       const instruction = getApproveFoundReportInstruction({
-        admin: account,
+        admin: signer,
         config: configAddress,
         lostPost: args.lostPostAddress,
         foundReport: foundReportAddress,
@@ -109,7 +112,7 @@ export function useRejectFoundReportMutation() {
       const foundReportAddress = await getFoundReportAddress(args.lostPostAddress, args.finderAddress)
       
       const instruction = getRejectFoundReportInstruction({
-        admin: account,
+        admin: signer,
         config: configAddress,
         lostPost: args.lostPostAddress,
         foundReport: foundReportAddress,
@@ -154,7 +157,7 @@ export function useApproveClaimMutation() {
       const claimTicketAddress = await getClaimTicketAddress(args.foundPostAddress, args.claimerAddress)
       
       const instruction = getApproveClaimInstruction({
-        admin: account,
+        admin: signer,
         config: configAddress,
         foundPost: args.foundPostAddress,
         claimTicket: claimTicketAddress,
@@ -198,7 +201,7 @@ export function useRejectClaimMutation() {
       const claimTicketAddress = await getClaimTicketAddress(args.foundPostAddress, args.claimerAddress)
       
       const instruction = getRejectClaimInstruction({
-        admin: account,
+        admin: signer,
         config: configAddress,
         foundPost: args.foundPostAddress,
         claimTicket: claimTicketAddress,

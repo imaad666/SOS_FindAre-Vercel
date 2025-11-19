@@ -9,10 +9,11 @@ import { getProgramDerivedAddress, getBytesEncoder } from 'gill'
 async function getAppConfigAddress() {
   const encoder = getBytesEncoder()
   const configSeed = encoder.encode(new Uint8Array([99, 111, 110, 102, 105, 103])) // b"config"
-  return getProgramDerivedAddress({
+  const [address] = await getProgramDerivedAddress({
     programAddress: FINDARE_PROGRAM_ADDRESS,
     seeds: [configSeed],
   })
+  return address
 }
 
 export function useGetConfigQuery() {
@@ -26,7 +27,7 @@ export function useGetConfigQuery() {
       }
       try {
         const configAddress = await getAppConfigAddress()
-        const config = await fetchMaybeAppConfig(client, configAddress)
+        const config = await fetchMaybeAppConfig(client.rpc, configAddress)
         return config?.exists ? config : null
       } catch {
         // Config doesn't exist - return null
