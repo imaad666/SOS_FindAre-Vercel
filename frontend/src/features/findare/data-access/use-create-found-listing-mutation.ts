@@ -23,7 +23,7 @@ async function getAppConfigAddress() {
 export function useCreateFoundListingMutation() {
   const { client, account, cluster } = useSolana()
   const queryClient = useQueryClient()
-  const signer = account ? useWalletUiSigner({ account }) : null
+  const signer = useWalletUiSigner({ account: account ?? { address: '' as any, label: '' } })
 
   return useMutation({
     mutationFn: async (args: {

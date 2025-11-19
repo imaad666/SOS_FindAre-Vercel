@@ -7,8 +7,7 @@ import {
 import { 
   createTransaction, 
   getProgramDerivedAddress, 
-  getBytesEncoder, 
-  getAddressEncoder,
+  getBytesEncoder,
   signAndSendTransactionMessageWithSigners,
   getBase58Decoder
 } from 'gill'
@@ -25,7 +24,7 @@ async function getAppConfigAddress() {
 export function useSubmitFoundReportMutation() {
   const { client, account, cluster } = useSolana()
   const queryClient = useQueryClient()
-  const signer = account ? useWalletUiSigner({ account }) : null
+  const signer = useWalletUiSigner({ account: account ?? { address: '' as any, label: '' } })
 
   return useMutation({
     mutationFn: async (args: {

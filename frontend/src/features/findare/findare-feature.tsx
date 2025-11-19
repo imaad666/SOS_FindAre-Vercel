@@ -31,7 +31,7 @@ export default function FindareFeature() {
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-2">Find[Are]</h1>
         <p className="text-muted-foreground">
-          Lost something? Found something? Let's help each other out.
+          Lost something? Found something? Let&apos;s help each other out.
         </p>
       </div>
 

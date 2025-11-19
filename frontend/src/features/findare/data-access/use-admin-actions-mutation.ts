@@ -50,7 +50,7 @@ async function getClaimTicketAddress(foundPostAddress: Address, claimerAddress: 
 export function useApproveFoundReportMutation() {
   const { client, account, cluster } = useSolana()
   const queryClient = useQueryClient()
-  const signer = account ? useWalletUiSigner({ account }) : null
+  const signer = useWalletUiSigner({ account: account ?? { address: '' as any, label: '' } })
 
   return useMutation({
     mutationFn: async (args: {
@@ -92,7 +92,7 @@ export function useApproveFoundReportMutation() {
 export function useRejectFoundReportMutation() {
   const { client, account, cluster } = useSolana()
   const queryClient = useQueryClient()
-  const signer = account ? useWalletUiSigner({ account }) : null
+  const signer = useWalletUiSigner({ account: account ?? { address: '' as any, label: '' } })
 
   return useMutation({
     mutationFn: async (args: {
@@ -134,7 +134,7 @@ export function useRejectFoundReportMutation() {
 export function useApproveClaimMutation() {
   const { client, account, cluster } = useSolana()
   const queryClient = useQueryClient()
-  const signer = account ? useWalletUiSigner({ account }) : null
+  const signer = useWalletUiSigner({ account: account ?? { address: '' as any, label: '' } })
 
   return useMutation({
     mutationFn: async (args: {
@@ -177,7 +177,7 @@ export function useApproveClaimMutation() {
 export function useRejectClaimMutation() {
   const { client, account, cluster } = useSolana()
   const queryClient = useQueryClient()
-  const signer = account ? useWalletUiSigner({ account }) : null
+  const signer = useWalletUiSigner({ account: account ?? { address: '' as any, label: '' } })
 
   return useMutation({
     mutationFn: async (args: {
