@@ -12,7 +12,7 @@ import {
   getBase58Decoder
 } from 'gill'
 import type { Address } from 'gill'
-import { useWalletUiSigner } from '@wallet-ui/react'
+import { UiWalletAccount, useWalletUiSigner } from '@wallet-ui/react'
 
 async function getAppConfigAddress() {
   return getProgramDerivedAddress({
@@ -24,7 +24,9 @@ async function getAppConfigAddress() {
 export function useSubmitFoundReportMutation() {
   const { client, account, cluster } = useSolana()
   const queryClient = useQueryClient()
-  const signer = useWalletUiSigner({ account: account ?? { address: '' as any, label: '' } })
+  const signer = useWalletUiSigner({ 
+    account: account ?? { address: '' as never, label: '' } as UiWalletAccount 
+  })
 
   return useMutation({
     mutationFn: async (args: {

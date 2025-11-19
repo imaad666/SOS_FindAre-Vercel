@@ -16,7 +16,7 @@ import {
   getBase58Decoder
 } from 'gill'
 import type { Address } from 'gill'
-import { useWalletUiSigner } from '@wallet-ui/react'
+import { UiWalletAccount, useWalletUiSigner } from '@wallet-ui/react'
 
 async function getAppConfigAddress() {
   return getProgramDerivedAddress({
@@ -50,7 +50,9 @@ async function getClaimTicketAddress(foundPostAddress: Address, claimerAddress: 
 export function useApproveFoundReportMutation() {
   const { client, account, cluster } = useSolana()
   const queryClient = useQueryClient()
-  const signer = useWalletUiSigner({ account: account ?? { address: '' as any, label: '' } })
+  const signer = useWalletUiSigner({ 
+    account: account ?? { address: '' as never, label: '' } as UiWalletAccount 
+  })
 
   return useMutation({
     mutationFn: async (args: {
@@ -92,7 +94,9 @@ export function useApproveFoundReportMutation() {
 export function useRejectFoundReportMutation() {
   const { client, account, cluster } = useSolana()
   const queryClient = useQueryClient()
-  const signer = useWalletUiSigner({ account: account ?? { address: '' as any, label: '' } })
+  const signer = useWalletUiSigner({ 
+    account: account ?? { address: '' as never, label: '' } as UiWalletAccount 
+  })
 
   return useMutation({
     mutationFn: async (args: {
@@ -134,7 +138,9 @@ export function useRejectFoundReportMutation() {
 export function useApproveClaimMutation() {
   const { client, account, cluster } = useSolana()
   const queryClient = useQueryClient()
-  const signer = useWalletUiSigner({ account: account ?? { address: '' as any, label: '' } })
+  const signer = useWalletUiSigner({ 
+    account: account ?? { address: '' as never, label: '' } as UiWalletAccount 
+  })
 
   return useMutation({
     mutationFn: async (args: {
@@ -177,7 +183,9 @@ export function useApproveClaimMutation() {
 export function useRejectClaimMutation() {
   const { client, account, cluster } = useSolana()
   const queryClient = useQueryClient()
-  const signer = useWalletUiSigner({ account: account ?? { address: '' as any, label: '' } })
+  const signer = useWalletUiSigner({ 
+    account: account ?? { address: '' as never, label: '' } as UiWalletAccount 
+  })
 
   return useMutation({
     mutationFn: async (args: {
