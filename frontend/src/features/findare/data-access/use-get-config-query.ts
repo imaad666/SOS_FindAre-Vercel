@@ -1,15 +1,17 @@
 import { useQuery } from '@tanstack/react-query'
 import { useSolana } from '@/components/solana/use-solana'
 import { 
-  fetchAppConfig, 
+  fetchMaybeAppConfig, 
   FINDARE_PROGRAM_ADDRESS 
 } from '../../../../anchor/src/client/js/generated'
 import { getProgramDerivedAddress, getBytesEncoder } from 'gill'
 
-function getAppConfigAddress() {
+async function getAppConfigAddress() {
+  const encoder = getBytesEncoder()
+  const configSeed = encoder.encode(new Uint8Array([99, 111, 110, 102, 105, 103])) // b"config"
   return getProgramDerivedAddress({
     programAddress: FINDARE_PROGRAM_ADDRESS,
-    seeds: [getBytesEncoder().encode(new Uint8Array([99, 111, 110, 102, 105, 103]))], // b"config"
+    seeds: [configSeed],
   })
 }
 
@@ -17,13 +19,24 @@ export function useGetConfigQuery() {
   const { client, cluster } = useSolana()
   
   return useQuery({
-    queryKey: ['findare', 'config', cluster.label],
+    queryKey: ['findare', 'config', cluster?.label || 'default'],
     queryFn: async () => {
-      if (!client) throw new Error('Client not available')
-      const configAddress = await getAppConfigAddress()
-      return fetchAppConfig(client, configAddress)
+      if (!client) {
+        return null
+      }
+      try {
+        const configAddress = await getAppConfigAddress()
+        const config = await fetchMaybeAppConfig(client, configAddress)
+        return config?.exists ? config : null
+      } catch {
+        // Config doesn't exist - return null
+        return null
+      }
     },
     enabled: !!client,
+    retry: false,
+    refetchOnWindowFocus: false,
+    staleTime: 30000,
   })
 }
 

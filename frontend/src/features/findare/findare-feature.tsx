@@ -23,6 +23,9 @@ export default function FindareFeature() {
     )
   }
 
+  // Don't block on initialization - show the app and let users create posts
+  // Initialization will happen automatically when they try to create a post
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="mb-8">

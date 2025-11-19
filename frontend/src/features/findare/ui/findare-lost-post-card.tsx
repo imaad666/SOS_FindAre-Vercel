@@ -34,7 +34,7 @@ export function FindareLostPostCard({ post }: { post: Account<LostPost> }) {
   const approveMutation = useApproveFoundReportMutation()
   const rejectMutation = useRejectFoundReportMutation()
 
-  const isAdmin = configQuery.data?.data.admin === account?.address
+  const isAdmin = configQuery.data?.exists && configQuery.data?.data?.admin === account?.address
   const isOwner = post.data.owner === account?.address
   const rewardSol = Number(post.data.rewardLamports) / Number(LAMPORTS_PER_SOL)
   const status = Number(post.data.status)

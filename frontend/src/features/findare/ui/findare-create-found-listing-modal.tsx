@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useCreateFoundListingMutation } from '../data-access/use-create-found-listing-mutation'
 import { useGetConfigQuery } from '../data-access/use-get-config-query'
+import { useInitializeAppMutation } from '../data-access/use-initialize-app-mutation'
 import { toast } from 'sonner'
 
 export function FindareCreateFoundListingModal({
@@ -21,18 +22,25 @@ export function FindareCreateFoundListingModal({
   
   const configQuery = useGetConfigQuery()
   const createMutation = useCreateFoundListingMutation()
+  const initMutation = useInitializeAppMutation()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!configQuery.data) {
-      toast.error('Config not loaded. Please wait...')
-      return
-    }
-
-    const postId = Number(configQuery.data.data.foundPostCount)
-
     try {
+      // Initialize app if needed
+      if (!configQuery.data?.exists) {
+        toast.info('Initializing app...')
+        await initMutation.mutateAsync()
+        // Refetch config
+        await configQuery.refetch()
+      }
+
+      // Get post ID from config
+      const postId = configQuery.data?.exists
+        ? Number(configQuery.data.data.foundPostCount)
+        : 0
+
       await createMutation.mutateAsync({
         postId,
         title,

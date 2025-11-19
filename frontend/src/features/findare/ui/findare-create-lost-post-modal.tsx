@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useCreateLostPostMutation } from '../data-access/use-create-lost-post-mutation'
 import { useGetConfigQuery } from '../data-access/use-get-config-query'
+import { useInitializeAppMutation } from '../data-access/use-initialize-app-mutation'
 import { toast } from 'sonner'
 
 const LAMPORTS_PER_SOL = 1_000_000_000n
@@ -25,25 +26,33 @@ export function FindareCreateLostPostModal({
   
   const configQuery = useGetConfigQuery()
   const createMutation = useCreateLostPostMutation()
+  const initMutation = useInitializeAppMutation()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!configQuery.data) {
-      toast.error('Config not loaded. Please wait...')
-      return
-    }
-
     const rewardAmount = parseFloat(rewardSol)
     if (isNaN(rewardAmount) || rewardAmount < MIN_REWARD_SOL) {
       toast.error(`Reward must be at least ${MIN_REWARD_SOL} SOL`)
       return
     }
 
-    const postId = Number(configQuery.data.data.lostPostCount)
-    const rewardLamports = BigInt(Math.floor(rewardAmount * Number(LAMPORTS_PER_SOL)))
-
     try {
+      // Initialize app if needed
+      if (!configQuery.data?.exists) {
+        toast.info('Initializing app...')
+        await initMutation.mutateAsync()
+        // Refetch config
+        await configQuery.refetch()
+      }
+
+      // Get post ID from config
+      const postId = configQuery.data?.exists 
+        ? Number(configQuery.data.data.lostPostCount)
+        : 0
+      
+      const rewardLamports = BigInt(Math.floor(rewardAmount * Number(LAMPORTS_PER_SOL)))
+
       await createMutation.mutateAsync({
         postId,
         title,

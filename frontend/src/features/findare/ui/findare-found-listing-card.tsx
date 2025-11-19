@@ -34,7 +34,7 @@ export function FindareFoundListingCard({ listing }: { listing: Account<FoundPos
   const approveMutation = useApproveClaimMutation()
   const rejectMutation = useRejectClaimMutation()
 
-  const isAdmin = configQuery.data?.data.admin === account?.address
+  const isAdmin = configQuery.data?.exists && configQuery.data?.data?.admin === account?.address
   const isFinder = listing.data.finder === account?.address
   const status = Number(listing.data.status)
 
