@@ -4,8 +4,15 @@ import {
   getClaimFoundListingInstructionAsync,
   FINDARE_PROGRAM_ADDRESS 
 } from '../../../../anchor/src/client/js/generated'
-import { sendAndConfirmTransactionFactory, getProgramDerivedAddress, getBytesEncoder } from 'gill'
+import { 
+  createTransaction, 
+  getProgramDerivedAddress, 
+  getBytesEncoder,
+  signAndSendTransactionMessageWithSigners,
+  getBase58Decoder
+} from 'gill'
 import type { Address } from 'gill'
+import { useWalletUiSigner } from '@wallet-ui/react'
 
 const LAMPORTS_PER_SOL = 1_000_000_000n
 const MIN_CLAIM_DEPOSIT_SOL = 0.01
@@ -20,6 +27,7 @@ async function getAppConfigAddress() {
 export function useClaimFoundListingMutation() {
   const { client, account, cluster } = useSolana()
   const queryClient = useQueryClient()
+  const signer = account ? useWalletUiSigner({ account }) : null
 
   return useMutation({
     mutationFn: async (args: {
@@ -27,7 +35,7 @@ export function useClaimFoundListingMutation() {
       claimNotes: string
       claimDepositSol: number
     }) => {
-      if (!client || !account) throw new Error('Client or account not available')
+      if (!client || !account || !signer) throw new Error('Client, account, or signer not available')
       
       if (args.claimDepositSol < MIN_CLAIM_DEPOSIT_SOL) {
         throw new Error(`Deposit must be at least ${MIN_CLAIM_DEPOSIT_SOL} SOL`)
@@ -44,11 +52,21 @@ export function useClaimFoundListingMutation() {
         claimDeposit: claimDepositLamports,
       })
 
-      const sendAndConfirm = sendAndConfirmTransactionFactory({ client })
-      return sendAndConfirm([instruction], { account })
+      const { value: latestBlockhash } = await client.rpc.getLatestBlockhash({ commitment: 'confirmed' }).send()
+      
+      const transaction = createTransaction({
+        feePayer: signer,
+        version: 0,
+        latestBlockhash,
+        instructions: [instruction],
+      })
+
+      const signatureBytes = await signAndSendTransactionMessageWithSigners(transaction)
+      const signature = getBase58Decoder().decode(signatureBytes)
+      return signature
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['findare', 'found-listings', cluster.label] })
+      queryClient.invalidateQueries({ queryKey: ['findare', 'found-listings', cluster?.label] })
     },
   })
 }

@@ -4,8 +4,16 @@ import {
   getSubmitFoundReportInstructionAsync,
   FINDARE_PROGRAM_ADDRESS 
 } from '../../../../anchor/src/client/js/generated'
-import { sendAndConfirmTransactionFactory, getProgramDerivedAddress, getBytesEncoder, getAddressEncoder } from 'gill'
+import { 
+  createTransaction, 
+  getProgramDerivedAddress, 
+  getBytesEncoder, 
+  getAddressEncoder,
+  signAndSendTransactionMessageWithSigners,
+  getBase58Decoder
+} from 'gill'
 import type { Address } from 'gill'
+import { useWalletUiSigner } from '@wallet-ui/react'
 
 async function getAppConfigAddress() {
   return getProgramDerivedAddress({
@@ -17,13 +25,14 @@ async function getAppConfigAddress() {
 export function useSubmitFoundReportMutation() {
   const { client, account, cluster } = useSolana()
   const queryClient = useQueryClient()
+  const signer = account ? useWalletUiSigner({ account }) : null
 
   return useMutation({
     mutationFn: async (args: {
       lostPostAddress: Address
       evidenceUri: string
     }) => {
-      if (!client || !account) throw new Error('Client or account not available')
+      if (!client || !account || !signer) throw new Error('Client, account, or signer not available')
       
       const configAddress = await getAppConfigAddress()
       const instruction = await getSubmitFoundReportInstructionAsync({
@@ -33,11 +42,21 @@ export function useSubmitFoundReportMutation() {
         evidenceUri: args.evidenceUri,
       })
 
-      const sendAndConfirm = sendAndConfirmTransactionFactory({ client })
-      return sendAndConfirm([instruction], { account })
+      const { value: latestBlockhash } = await client.rpc.getLatestBlockhash({ commitment: 'confirmed' }).send()
+      
+      const transaction = createTransaction({
+        feePayer: signer,
+        version: 0,
+        latestBlockhash,
+        instructions: [instruction],
+      })
+
+      const signatureBytes = await signAndSendTransactionMessageWithSigners(transaction)
+      const signature = getBase58Decoder().decode(signatureBytes)
+      return signature
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['findare', 'lost-posts', cluster.label] })
+      queryClient.invalidateQueries({ queryKey: ['findare', 'lost-posts', cluster?.label] })
     },
   })
 }

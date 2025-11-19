@@ -7,8 +7,16 @@ import {
   getRejectClaimInstruction,
   FINDARE_PROGRAM_ADDRESS 
 } from '../../../../anchor/src/client/js/generated'
-import { sendAndConfirmTransactionFactory, getProgramDerivedAddress, getBytesEncoder, getAddressEncoder } from 'gill'
+import { 
+  createTransaction, 
+  getProgramDerivedAddress, 
+  getBytesEncoder, 
+  getAddressEncoder,
+  signAndSendTransactionMessageWithSigners,
+  getBase58Decoder
+} from 'gill'
 import type { Address } from 'gill'
+import { useWalletUiSigner } from '@wallet-ui/react'
 
 async function getAppConfigAddress() {
   return getProgramDerivedAddress({
@@ -42,13 +50,14 @@ async function getClaimTicketAddress(foundPostAddress: Address, claimerAddress: 
 export function useApproveFoundReportMutation() {
   const { client, account, cluster } = useSolana()
   const queryClient = useQueryClient()
+  const signer = account ? useWalletUiSigner({ account }) : null
 
   return useMutation({
     mutationFn: async (args: {
       lostPostAddress: Address
       finderAddress: Address
     }) => {
-      if (!client || !account) throw new Error('Client or account not available')
+      if (!client || !account || !signer) throw new Error('Client, account, or signer not available')
       
       const configAddress = await getAppConfigAddress()
       const foundReportAddress = await getFoundReportAddress(args.lostPostAddress, args.finderAddress)
@@ -61,11 +70,21 @@ export function useApproveFoundReportMutation() {
         finder: args.finderAddress,
       })
 
-      const sendAndConfirm = sendAndConfirmTransactionFactory({ client })
-      return sendAndConfirm([instruction], { account })
+      const { value: latestBlockhash } = await client.rpc.getLatestBlockhash({ commitment: 'confirmed' }).send()
+      
+      const transaction = createTransaction({
+        feePayer: signer,
+        version: 0,
+        latestBlockhash,
+        instructions: [instruction],
+      })
+
+      const signatureBytes = await signAndSendTransactionMessageWithSigners(transaction)
+      const signature = getBase58Decoder().decode(signatureBytes)
+      return signature
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['findare', 'lost-posts', cluster.label] })
+      queryClient.invalidateQueries({ queryKey: ['findare', 'lost-posts', cluster?.label] })
     },
   })
 }
@@ -73,13 +92,14 @@ export function useApproveFoundReportMutation() {
 export function useRejectFoundReportMutation() {
   const { client, account, cluster } = useSolana()
   const queryClient = useQueryClient()
+  const signer = account ? useWalletUiSigner({ account }) : null
 
   return useMutation({
     mutationFn: async (args: {
       lostPostAddress: Address
       finderAddress: Address
     }) => {
-      if (!client || !account) throw new Error('Client or account not available')
+      if (!client || !account || !signer) throw new Error('Client, account, or signer not available')
       
       const configAddress = await getAppConfigAddress()
       const foundReportAddress = await getFoundReportAddress(args.lostPostAddress, args.finderAddress)
@@ -92,11 +112,21 @@ export function useRejectFoundReportMutation() {
         finder: args.finderAddress,
       })
 
-      const sendAndConfirm = sendAndConfirmTransactionFactory({ client })
-      return sendAndConfirm([instruction], { account })
+      const { value: latestBlockhash } = await client.rpc.getLatestBlockhash({ commitment: 'confirmed' }).send()
+      
+      const transaction = createTransaction({
+        feePayer: signer,
+        version: 0,
+        latestBlockhash,
+        instructions: [instruction],
+      })
+
+      const signatureBytes = await signAndSendTransactionMessageWithSigners(transaction)
+      const signature = getBase58Decoder().decode(signatureBytes)
+      return signature
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['findare', 'lost-posts', cluster.label] })
+      queryClient.invalidateQueries({ queryKey: ['findare', 'lost-posts', cluster?.label] })
     },
   })
 }
@@ -104,6 +134,7 @@ export function useRejectFoundReportMutation() {
 export function useApproveClaimMutation() {
   const { client, account, cluster } = useSolana()
   const queryClient = useQueryClient()
+  const signer = account ? useWalletUiSigner({ account }) : null
 
   return useMutation({
     mutationFn: async (args: {
@@ -111,7 +142,7 @@ export function useApproveClaimMutation() {
       claimerAddress: Address
       finderAddress: Address
     }) => {
-      if (!client || !account) throw new Error('Client or account not available')
+      if (!client || !account || !signer) throw new Error('Client, account, or signer not available')
       
       const configAddress = await getAppConfigAddress()
       const claimTicketAddress = await getClaimTicketAddress(args.foundPostAddress, args.claimerAddress)
@@ -124,11 +155,21 @@ export function useApproveClaimMutation() {
         finder: args.finderAddress,
       })
 
-      const sendAndConfirm = sendAndConfirmTransactionFactory({ client })
-      return sendAndConfirm([instruction], { account })
+      const { value: latestBlockhash } = await client.rpc.getLatestBlockhash({ commitment: 'confirmed' }).send()
+      
+      const transaction = createTransaction({
+        feePayer: signer,
+        version: 0,
+        latestBlockhash,
+        instructions: [instruction],
+      })
+
+      const signatureBytes = await signAndSendTransactionMessageWithSigners(transaction)
+      const signature = getBase58Decoder().decode(signatureBytes)
+      return signature
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['findare', 'found-listings', cluster.label] })
+      queryClient.invalidateQueries({ queryKey: ['findare', 'found-listings', cluster?.label] })
     },
   })
 }
@@ -136,13 +177,14 @@ export function useApproveClaimMutation() {
 export function useRejectClaimMutation() {
   const { client, account, cluster } = useSolana()
   const queryClient = useQueryClient()
+  const signer = account ? useWalletUiSigner({ account }) : null
 
   return useMutation({
     mutationFn: async (args: {
       foundPostAddress: Address
       claimerAddress: Address
     }) => {
-      if (!client || !account) throw new Error('Client or account not available')
+      if (!client || !account || !signer) throw new Error('Client, account, or signer not available')
       
       const configAddress = await getAppConfigAddress()
       const claimTicketAddress = await getClaimTicketAddress(args.foundPostAddress, args.claimerAddress)
@@ -155,11 +197,21 @@ export function useRejectClaimMutation() {
         claimer: args.claimerAddress,
       })
 
-      const sendAndConfirm = sendAndConfirmTransactionFactory({ client })
-      return sendAndConfirm([instruction], { account })
+      const { value: latestBlockhash } = await client.rpc.getLatestBlockhash({ commitment: 'confirmed' }).send()
+      
+      const transaction = createTransaction({
+        feePayer: signer,
+        version: 0,
+        latestBlockhash,
+        instructions: [instruction],
+      })
+
+      const signatureBytes = await signAndSendTransactionMessageWithSigners(transaction)
+      const signature = getBase58Decoder().decode(signatureBytes)
+      return signature
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['findare', 'found-listings', cluster.label] })
+      queryClient.invalidateQueries({ queryKey: ['findare', 'found-listings', cluster?.label] })
     },
   })
 }
